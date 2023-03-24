@@ -493,6 +493,7 @@ const usage_build_generic =
     \\  -T[script], --script [script]  Use a custom linker script
     \\  --version-script [path]        Provide a version .map file
     \\  --dynamic-linker [path]        Set the dynamic interpreter path (usually ld.so)
+    \\  --dynamic-list=[file]          Read a list of dynamic symbols from file.
     \\  --sysroot [path]               Set the system root directory (usually /)
     \\  --version [ver]                Dynamic library semver
     \\  --entry [name]                 Set the entrypoint symbol name
@@ -830,6 +831,7 @@ fn buildOutputType(
     var disable_c_depfile = false;
     var linker_sort_section: ?link.SortSection = null;
     var linker_gc_sections: ?bool = null;
+    var linker_dynamic_list: ?[]const u8 = null;
     var linker_compress_debug_sections: ?link.CompressDebugSections = null;
     var linker_allow_shlib_undefined: ?bool = null;
     var linker_bind_global_refs_locally: ?bool = null;
@@ -2004,6 +2006,8 @@ fn buildOutputType(
                     rdynamic = true;
                 } else if (mem.eql(u8, arg, "-version-script") or mem.eql(u8, arg, "--version-script")) {
                     version_script = linker_args_it.nextOrFatal();
+                } else if (mem.eql(u8, arg, "--dynamic-list")) {
+                    linker_dynamic_list = linker_args_it.nextOrFatal();
                 } else if (mem.eql(u8, arg, "-O")) {
                     const opt = linker_args_it.nextOrFatal();
                     linker_optimization = std.fmt.parseUnsigned(u8, opt, 10) catch |err| {
@@ -3280,6 +3284,7 @@ fn buildOutputType(
         .rdynamic = rdynamic,
         .linker_script = linker_script,
         .version_script = version_script,
+        .linker_dynamic_list = linker_dynamic_list,
         .disable_c_depfile = disable_c_depfile,
         .soname = resolved_soname,
         .linker_sort_section = linker_sort_section,

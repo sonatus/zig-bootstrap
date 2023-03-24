@@ -556,6 +556,7 @@ pub const InitOptions = struct {
     linker_script: ?[]const u8 = null,
     version_script: ?[]const u8 = null,
     soname: ?[]const u8 = null,
+    linker_dynamic_list: ?[]const u8 = null,
     linker_gc_sections: ?bool = null,
     linker_allow_shlib_undefined: ?bool = null,
     linker_bind_global_refs_locally: ?bool = null,
@@ -837,6 +838,7 @@ pub fn create(gpa: Allocator, options: InitOptions) !*Compilation {
                 options.link_emit_relocs or
                 options.output_mode == .Lib or
                 options.linker_script != null or options.version_script != null or
+                options.linker_dynamic_list != null or
                 options.emit_implib != null or
                 build_id != .none or
                 options.symbol_wrap_set.count() > 0)
@@ -1517,6 +1519,7 @@ pub fn create(gpa: Allocator, options: InitOptions) !*Compilation {
             .include_compiler_rt = include_compiler_rt,
             .linker_script = options.linker_script,
             .version_script = options.version_script,
+            .dynamic_list = options.linker_dynamic_list,
             .gc_sections = options.linker_gc_sections,
             .eh_frame_hdr = link_eh_frame_hdr,
             .emit_relocs = options.link_emit_relocs,
@@ -2267,7 +2270,7 @@ fn prepareWholeEmitSubPath(arena: Allocator, opt_emit: ?EmitLoc) error{OutOfMemo
 /// to remind the programmer to update multiple related pieces of code that
 /// are in different locations. Bump this number when adding or deleting
 /// anything from the link cache manifest.
-pub const link_hash_implementation_version = 9;
+pub const link_hash_implementation_version = 0x8000_0009;
 
 fn addNonIncrementalStuffToCacheManifest(comp: *Compilation, man: *Cache.Manifest) !void {
     const gpa = comp.gpa;
@@ -2277,7 +2280,7 @@ fn addNonIncrementalStuffToCacheManifest(comp: *Compilation, man: *Cache.Manifes
     defer arena_allocator.deinit();
     const arena = arena_allocator.allocator();
 
-    comptime assert(link_hash_implementation_version == 9);
+    comptime assert(link_hash_implementation_version == 0x8000_0009);
 
     if (comp.bin_file.options.module) |mod| {
         const main_zig_file = try mod.main_pkg.root_src_directory.join(arena, &[_][]const u8{
@@ -2311,6 +2314,7 @@ fn addNonIncrementalStuffToCacheManifest(comp: *Compilation, man: *Cache.Manifes
 
     try man.addOptionalFile(comp.bin_file.options.linker_script);
     try man.addOptionalFile(comp.bin_file.options.version_script);
+    try man.addOptionalFile(comp.bin_file.options.dynamic_list);
 
     for (comp.bin_file.options.objects) |obj| {
         _ = try man.addFile(obj.path, null);
