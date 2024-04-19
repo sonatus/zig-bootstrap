@@ -3156,33 +3156,6 @@ fn buildOutputType(
                 .path = local_cache_dir_path,
             };
         }
-        if (arg_mode == .run) {
-            break :l global_cache_directory;
-        }
-        if (main_pkg) |pkg| {
-            // search upwards from cwd until we find directory with build.zig
-            const cwd_path = try process.getCwdAlloc(arena);
-            const build_zig = "build.zig";
-            const zig_cache = "zig-cache";
-            var dirname: []const u8 = cwd_path;
-            while (true) {
-                const joined_path = try fs.path.join(arena, &[_][]const u8{ dirname, build_zig });
-                if (fs.cwd().access(joined_path, .{})) |_| {
-                    const cache_dir_path = try fs.path.join(arena, &[_][]const u8{ dirname, zig_cache });
-                    const dir = try pkg.root_src_directory.handle.makeOpenPath(cache_dir_path, .{});
-                    cleanup_local_cache_dir = dir;
-                    break :l .{ .handle = dir, .path = cache_dir_path };
-                } else |err| switch (err) {
-                    error.FileNotFound => {
-                        dirname = fs.path.dirname(dirname) orelse {
-                            break :l global_cache_directory;
-                        };
-                        continue;
-                    },
-                    else => break :l global_cache_directory,
-                }
-            }
-        }
         // Otherwise we really don't have a reasonable place to put the local cache directory,
         // so we utilize the global one.
         break :l global_cache_directory;
