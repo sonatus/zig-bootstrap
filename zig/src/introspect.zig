@@ -93,6 +93,16 @@ pub fn resolveGlobalCacheDir(allocator: mem.Allocator) ![]u8 {
             return fs.path.join(allocator, &[_][]const u8{ cache_root, appname });
         } else if (std.zig.EnvVar.HOME.getPosix()) |home| {
             return fs.path.join(allocator, &[_][]const u8{ home, ".cache", appname });
+        } else if (builtin.os.tag == .linux) {
+            if (std.c.getpwuid(std.os.linux.getuid())) |pw| {
+                if (pw.pw_name) |name| {
+                    if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{std.mem.span(name)})) |path| {
+                        return path;
+                    } else |_| {}
+                }
+            }
+        } else if (builtin.os.tag == .macos) {
+            return allocator.dupe(u8, "/var/tmp/bazel-zig");
         }
     }
 
