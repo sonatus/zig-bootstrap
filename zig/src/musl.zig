@@ -753,6 +753,7 @@ const src_files = [_][]const u8{
     "musl/src/linux/settimeofday.c",
     "musl/src/linux/signalfd.c",
     "musl/src/linux/splice.c",
+    "musl/src/linux/statx.c",
     "musl/src/linux/stime.c",
     "musl/src/linux/swap.c",
     "musl/src/linux/sync_file_range.c",
