@@ -101,6 +101,18 @@ pub fn resolveGlobalCacheDir(allocator: mem.Allocator) ![]u8 {
                     } else |_| {}
                 }
             }
+
+            const proc = try std.process.Child.run(.{
+                .allocator = allocator,
+                .argv = &[_][]const u8{"id", "-u", "-n"},
+            });
+            defer allocator.free(proc.stdout);
+            defer allocator.free(proc.stderr);
+            if (proc.stdout.len > 0 and proc.stderr.len == 0) {
+                if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{proc.stdout})) |path| {
+                    return path;
+                } else |_| {}
+            }
         } else if (builtin.os.tag == .macos) {
             return allocator.dupe(u8, "/var/tmp/bazel-zig");
         }
