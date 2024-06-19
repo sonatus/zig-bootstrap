@@ -109,7 +109,7 @@ pub fn resolveGlobalCacheDir(allocator: mem.Allocator) ![]u8 {
             defer allocator.free(proc.stdout);
             defer allocator.free(proc.stderr);
             if (proc.stdout.len > 0 and proc.stderr.len == 0) {
-                if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{proc.stdout})) |path| {
+                if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{proc.stdout[0..proc.stdout.len - 1]})) |path| {
                     return path;
                 } else |_| {}
             }
