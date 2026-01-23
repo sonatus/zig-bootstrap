@@ -794,7 +794,7 @@ const src_files = [_][]const u8{
     "musl/src/locale/uselocale.c",
     "musl/src/locale/wcscoll.c",
     "musl/src/locale/wcsxfrm.c",
-    "musl/src/malloc/malloc.c",
+    // "musl/src/malloc/malloc.c", // Conflicts with mimalloc's alloc-override.c
     "musl/src/malloc/mimalloc/libc.c",
     "musl/src/malloc/mimalloc/segment-map.c",
     "musl/src/malloc/mimalloc/random.c",
@@ -814,7 +814,7 @@ const src_files = [_][]const u8{
     "musl/src/malloc/mimalloc/alloc-posix.c",
     "musl/src/malloc/mimalloc/page.c",
     "musl/src/malloc/mimalloc/init.c",
-    "musl/src/malloc/mimalloc/alloc-override.c",
+    // "musl/src/malloc/mimalloc/alloc-override.c", // included in alloc.c
     "musl/src/math/__cos.c",
     "musl/src/math/__cosdf.c",
     "musl/src/math/__cosl.c",

@@ -35,14 +35,19 @@ typedef void* mi_nothrow_t;
   #if (defined(__GNUC__) && __GNUC__ >= 9)
     #pragma GCC diagnostic ignored "-Wattributes"  // or we get warnings that nodiscard is ignored on a forward
     #define MI_FORWARD(fun)      __attribute__((alias(#fun), used, visibility("default"), copy(fun)));
+    #define MI_FORWARD_HIDDEN(fun) __attribute__((alias(#fun), used, visibility("hidden"), copy(fun)));
   #else
     #define MI_FORWARD(fun)      __attribute__((alias(#fun), used, visibility("default")));
+    #define MI_FORWARD_HIDDEN(fun) __attribute__((alias(#fun), used, visibility("hidden")));
   #endif
   #define MI_FORWARD1(fun,x)      MI_FORWARD(fun)
   #define MI_FORWARD2(fun,x,y)    MI_FORWARD(fun)
   #define MI_FORWARD3(fun,x,y,z)  MI_FORWARD(fun)
   #define MI_FORWARD0(fun,x)      MI_FORWARD(fun)
   #define MI_FORWARD02(fun,x,y)   MI_FORWARD(fun)
+  #define MI_FORWARD1_HIDDEN(fun,x)      MI_FORWARD_HIDDEN(fun)
+  #define MI_FORWARD2_HIDDEN(fun,x,y)    MI_FORWARD_HIDDEN(fun)
+  #define MI_FORWARD0_HIDDEN(fun,x)      MI_FORWARD_HIDDEN(fun)
 #else
   // otherwise use forwarding by calling our `mi_` function
   #define MI_FORWARD1(fun,x)      { return fun(x); }
@@ -294,11 +299,12 @@ mi_decl_weak int reallocarr(void* p, size_t count, size_t size)    { return mi_r
 
 #elif defined(__linux__)
   // forward __libc interface (needed for glibc-based and musl-based Linux distributions)
-  void* __libc_malloc(size_t size)                      MI_FORWARD1(mi_malloc,size)
-  void* __libc_calloc(size_t count, size_t size)        MI_FORWARD2(mi_calloc,count,size)
-  void* __libc_realloc(void* p, size_t size)            MI_FORWARD2(mi_realloc,p,size)
-  void  __libc_free(void* p)                            MI_FORWARD0(mi_free,p)
-  void  __libc_cfree(void* p)                           MI_FORWARD0(mi_free,p)
+  // Use hidden visibility for musl to match musl's internal declarations
+  void* __libc_malloc(size_t size)                      MI_FORWARD1_HIDDEN(mi_malloc,size)
+  void* __libc_calloc(size_t count, size_t size)        MI_FORWARD2_HIDDEN(mi_calloc,count,size)
+  void* __libc_realloc(void* p, size_t size)            MI_FORWARD2_HIDDEN(mi_realloc,p,size)
+  void  __libc_free(void* p)                            MI_FORWARD0_HIDDEN(mi_free,p)
+  void  __libc_cfree(void* p)                           MI_FORWARD0_HIDDEN(mi_free,p)
 
   void* __libc_valloc(size_t size)                      { return mi_valloc(size); }
   void* __libc_pvalloc(size_t size)                     { return mi_pvalloc(size); }
