@@ -809,6 +809,7 @@ const src_files = [_][]const u8{
     "musl/src/malloc/mimalloc/stats.c",
     "musl/src/malloc/mimalloc/alloc.c",
     "musl/src/malloc/mimalloc/arena.c",
+    "musl/src/malloc/mimalloc/arena-abandon.c",
     "musl/src/malloc/mimalloc/segment.c",
     "musl/src/malloc/mimalloc/alloc-posix.c",
     "musl/src/malloc/mimalloc/page.c",
