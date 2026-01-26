@@ -1063,8 +1063,8 @@ void _mi_prim_thread_associate_default_heap(mi_heap_t *heap) {
 // gcc,clang: use the constructor/destructor attribute
 // which for both seem to run before regular constructors/destructors
 #if defined(__clang__)
-#define mi_attr_constructor __attribute__((constructor(101)))
-#define mi_attr_destructor __attribute__((destructor(101)))
+#define mi_attr_constructor __attribute__((constructor(99)))
+#define mi_attr_destructor __attribute__((destructor(99)))
 #else
 #define mi_attr_constructor __attribute__((constructor))
 #define mi_attr_destructor __attribute__((destructor))
