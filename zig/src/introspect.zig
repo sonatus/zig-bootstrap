@@ -116,7 +116,7 @@ pub fn resolveGlobalCacheDir(allocator: Allocator) ![]u8 {
             return fs.path.join(allocator, &.{ home, ".cache", appname });
         } else if (builtin.os.tag == .linux) {
             if (std.c.getpwuid(std.os.linux.getuid())) |pw| {
-                if (pw.pw_name) |name| {
+                if (pw.name) |name| {
                     if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{std.mem.span(name)})) |path| {
                         return path;
                     } else |_| {}
@@ -130,7 +130,7 @@ pub fn resolveGlobalCacheDir(allocator: Allocator) ![]u8 {
             defer allocator.free(proc.stdout);
             defer allocator.free(proc.stderr);
             if (proc.stdout.len > 0 and proc.stderr.len == 0) {
-                if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{proc.stdout[0..proc.stdout.len -1]})) |path| {
+                if (std.fmt.allocPrint(allocator, "/tmp/bazel-zig-{s}", .{proc.stdout[0..proc.stdout.len - 1]})) |path| {
                     return path;
                 } else |_| {}
             }

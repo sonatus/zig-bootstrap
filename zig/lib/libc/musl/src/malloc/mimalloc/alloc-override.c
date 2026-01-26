@@ -47,6 +47,7 @@ typedef void* mi_nothrow_t;
   #define MI_FORWARD02(fun,x,y)   MI_FORWARD(fun)
   #define MI_FORWARD1_HIDDEN(fun,x)      MI_FORWARD_HIDDEN(fun)
   #define MI_FORWARD2_HIDDEN(fun,x,y)    MI_FORWARD_HIDDEN(fun)
+  #define MI_FORWARD3_HIDDEN(fun,x,y,z)  MI_FORWARD_HIDDEN(fun)
   #define MI_FORWARD0_HIDDEN(fun,x)      MI_FORWARD_HIDDEN(fun)
 #else
   // otherwise use forwarding by calling our `mi_` function
@@ -308,8 +309,8 @@ mi_decl_weak int reallocarr(void* p, size_t count, size_t size)    { return mi_r
 
   void* __libc_valloc(size_t size)                      { return mi_valloc(size); }
   void* __libc_pvalloc(size_t size)                     { return mi_pvalloc(size); }
-  void* __libc_memalign(size_t alignment, size_t size)  { return mi_memalign(alignment,size); }
-  int   __posix_memalign(void** p, size_t alignment, size_t size) { return mi_posix_memalign(p,alignment,size); }
+  void* __libc_memalign(size_t alignment, size_t size)  { return mi_memalign(alignment, size); }
+  int   __posix_memalign(void** p, size_t alignment, size_t size) { return mi_posix_memalign(p, alignment, size); }
 #endif
 
 #ifdef __cplusplus

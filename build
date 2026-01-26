@@ -9,6 +9,13 @@ MCPU="$2" # Examples: `baseline`, `native`, `generic+v7a`, or `arm1176jzf_s`
 ROOTDIR="$(pwd)"
 ZIG_VERSION="0.15.2-sonatus"
 
+GEN_NINJA=""
+JOBS=""
+if [ "${3:-}" = "ninja-build" ]; then
+  GEN_NINJA="-G Ninja"
+  JOBS="-j 48"
+fi
+
 TARGET_OS_AND_ABI=${TARGET#*-} # Example: linux-gnu
 
 # Here we map the OS from the target triple to the value that CMake expects.
@@ -25,7 +32,7 @@ esac
 # First build the libraries for Zig to link against, as well as native `llvm-tblgen`.
 mkdir -p "$ROOTDIR/out/build-llvm-host"
 cd "$ROOTDIR/out/build-llvm-host"
-cmake "$ROOTDIR/llvm" \
+cmake $GEN_NINJA "$ROOTDIR/llvm" \
   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
   -DCMAKE_BUILD_TYPE=Release \
@@ -56,18 +63,18 @@ cmake "$ROOTDIR/llvm" \
   -DCLANG_TOOL_ARCMT_TEST_BUILD=OFF \
   -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF \
   -DCLANG_TOOL_LIBCLANG_BUILD=OFF
-cmake --build . --target install
+cmake --build . $JOBS --target install
 
 # Now we build Zig, still with system C/C++ compiler, linking against LLVM,
 # Clang, LLD we just built from source.
 mkdir -p "$ROOTDIR/out/build-zig-host"
 cd "$ROOTDIR/out/build-zig-host"
-cmake "$ROOTDIR/zig" \
+cmake $GEN_NINJA "$ROOTDIR/zig" \
   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/host" \
   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/host" \
   -DCMAKE_BUILD_TYPE=Release \
   -DZIG_VERSION="$ZIG_VERSION"
-cmake --build . --target install
+cmake --build . $JOBS --target install
 
 # Now we have Zig as a cross compiler.
 ZIG="$ROOTDIR/out/host/bin/zig"
@@ -76,7 +83,7 @@ ZIG="$ROOTDIR/out/host/bin/zig"
 # the final zig binary to have zlib support enabled.
 mkdir -p "$ROOTDIR/out/build-zlib-$TARGET-$MCPU"
 cd "$ROOTDIR/out/build-zlib-$TARGET-$MCPU"
-cmake "$ROOTDIR/zlib" \
+cmake $GEN_NINJA "$ROOTDIR/zlib" \
   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/$TARGET-$MCPU" \
   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/$TARGET-$MCPU" \
   -DCMAKE_BUILD_TYPE=Release \
@@ -89,7 +96,7 @@ cmake "$ROOTDIR/zlib" \
   -DCMAKE_RC_COMPILER="$ROOTDIR/out/host/bin/llvm-rc" \
   -DCMAKE_AR="$ROOTDIR/out/host/bin/llvm-ar" \
   -DCMAKE_RANLIB="$ROOTDIR/out/host/bin/llvm-ranlib"
-cmake --build . --target install
+cmake --build . $JOBS --target install
 
 # Same deal for zstd.
 # The build system for zstd is whack so I just put all the files here.
@@ -139,7 +146,7 @@ $ZIG build-lib \
 # Rebuild LLVM with Zig.
 mkdir -p "$ROOTDIR/out/build-llvm-$TARGET-$MCPU"
 cd "$ROOTDIR/out/build-llvm-$TARGET-$MCPU"
-cmake "$ROOTDIR/llvm" \
+cmake $GEN_NINJA "$ROOTDIR/llvm" \
   -DCMAKE_INSTALL_PREFIX="$ROOTDIR/out/$TARGET-$MCPU" \
   -DCMAKE_PREFIX_PATH="$ROOTDIR/out/$TARGET-$MCPU" \
   -DCMAKE_BUILD_TYPE=Release \
@@ -191,7 +198,7 @@ cmake "$ROOTDIR/llvm" \
   -DCLANG_TOOL_C_ARCMT_TEST_BUILD=OFF \
   -DCLANG_TOOL_LIBCLANG_BUILD=OFF \
   -DLLD_BUILD_TOOLS=OFF
-cmake --build . --target install
+cmake --build . $JOBS --target install
 
 # Finally, we can cross compile Zig itself, with Zig.
 cd "$ROOTDIR/zig"

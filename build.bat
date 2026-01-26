@@ -38,6 +38,10 @@ set ROOTDIR=%~dp0
 set "ROOTDIR_CMAKE=%ROOTDIR:\=/%"
 set ZIG_VERSION="0.15.2"
 set JOBS_ARG=
+if "%3" == "ninja-build" (
+  set JOBS_ARG=-j 32
+)
+
 
 pushd %ROOTDIR%
 
