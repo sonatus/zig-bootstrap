@@ -145,10 +145,18 @@ typedef void* mi_nothrow_t;
 #endif
 
 // ------------------------------------------------------
-// Override new/delete
-// This is not really necessary as they usually call
-// malloc/free anyway, but it improves performance.
+// Override new/delete -- disabled below (#if 0).
+//
+// Overriding operator new/delete here makes them strong symbols, which
+// collide (duplicate symbol at link time) with any program that defines
+// its own global operator new/delete. libc++/libc++abi already provide
+// new/delete as weak definitions that call malloc/free (see
+// libcxxabi/src/stdlib_new_delete.cpp), and malloc/free above are still
+// strongly overridden to mimalloc, so the default allocator is unchanged --
+// it's just reached through libc++abi's weak wrapper instead of a direct
+// alias to mi_new.
 // ------------------------------------------------------
+#if 0
 #ifdef __cplusplus
   // ------------------------------------------------------
   // With a C++ compiler we override the new/delete operators.
@@ -230,6 +238,7 @@ typedef void* mi_nothrow_t;
     #error "define overloads for new/delete for this platform (just for performance, can be skipped)"
   #endif
 #endif // __cplusplus
+#endif // 0 -- new/delete override disabled
 
 // ------------------------------------------------------
 // Further Posix & Unix functions definitions
