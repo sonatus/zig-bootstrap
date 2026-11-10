@@ -148,7 +148,20 @@ typedef void* mi_nothrow_t;
 // Override new/delete
 // This is not really necessary as they usually call
 // malloc/free anyway, but it improves performance.
+//
+// Sonatus: disabled by default in this musl libc build. This file is part
+// of alloc.o, the same archive member as malloc, so every program links
+// whatever it defines. Defined here, operator new/delete become strong
+// symbols that collide with any program that replaces them, which
+// [replacement.functions] allows. libc++abi already defines them as
+// replaceable (weak) and allocates through malloc/free, which are still
+// mimalloc, so leaving them to libc++abi keeps mimalloc as the allocator.
 // ------------------------------------------------------
+#ifndef MI_LIBC_OVERRIDE_NEW_DELETE
+#define MI_LIBC_OVERRIDE_NEW_DELETE 0
+#endif
+
+#if MI_LIBC_OVERRIDE_NEW_DELETE
 #ifdef __cplusplus
   // ------------------------------------------------------
   // With a C++ compiler we override the new/delete operators.
@@ -230,6 +243,7 @@ typedef void* mi_nothrow_t;
     #error "define overloads for new/delete for this platform (just for performance, can be skipped)"
   #endif
 #endif // __cplusplus
+#endif // MI_LIBC_OVERRIDE_NEW_DELETE
 
 // ------------------------------------------------------
 // Further Posix & Unix functions definitions
